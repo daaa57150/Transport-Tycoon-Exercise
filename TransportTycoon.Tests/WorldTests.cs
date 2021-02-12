@@ -7,9 +7,9 @@ namespace TransportTycoon.Tests
     public class WorldTests
     {
         [Theory]
-        [InlineData("A", 5)]
+        //[InlineData("A", 5)]
         //[InlineData("AB", 5)]
-        //[InlineData("BB", 5)]
+        [InlineData("BB", 5)]
         //[InlineData("ABB", 7)]
         //[InlineData("AABABBAB", )]
         //[InlineData("AAAABBBB", )]
@@ -18,13 +18,13 @@ namespace TransportTycoon.Tests
         public void ShouldDeliver(string destinations, int durationTimeInHours)
         {
             // Arrange
-            var world = new World(destinations.Select(x => x.ToString()));
+            var world = new World(destinations.Select(chr => chr.ToString()));
 
             // Act
             world.Deliver();
 
             // Assert
-            Assert.Equal(TimeSpan.FromHours(durationTimeInHours), world.CurrentTime);
+            Assert.Equal(durationTimeInHours, world.CurrentTime);
         }
     }
 }

@@ -6,32 +6,56 @@ namespace TransportTycoon
 {
     public class World
     {
-        private Location factory;
-        private Location warehouseA;
-        private Location warehouseB;
-        private Location port;
-        private int containerToDeliever;
-        private Vehicle _truck1;
-        private Vehicle _truck2;
-        private Vehicle _boat;
+        // private Factory factory;
+        // private Destination warehouseA;
+        // private Destination warehouseB;
+        // private Port port;
+
+        // private Vehicle truck1;
+        // private Vehicle truck2;
+        // private Vehicle boat;
+
+        private IEnumerable<Container> Containers; // = new List<Container>();
+        private IEnumerable<Vehicle> Vehicles; //  = new List<Vehicle>() { truck1, truck2, boat };
+        private IEnumerable<Location> Locations; // = new List<Location>() { factory, warehouseA, warehouseB, port };
+        // private IEnumerable<Location> FinalDestinations; //
+
+
+        public int CurrentTime { get; private set; } = 0;
 
         public World(IEnumerable<string> containerDestinations)
         {
-            containerToDeliever = containerDestinations.Count();
-            factory = new Location("Factory");
-            warehouseA = new Location("A");
-            warehouseB = new Location("B");
-            port = new Location("Port");
+            var truck1 = new Vehicle("Truck1");
+            var truck2 = new Vehicle("Truck2");
+            var boat = new Vehicle("Boat");
 
-            var factoryToWarehouseB = new Route(factory, warehouseB, 5);
-            var factoryToPort = new Route(factory, port, 1);
-            var portToWarehouseA = new Route(port, warehouseA, 4);
+            // containerToDeliever = containerDestinations.Count();
+            var factory = new Factory();
+            var warehouseA = new Destination("A");
+            var warehouseB = new Destination("B");
+            var port = new Port();
 
-            _truck1 = new Vehicle();
-            _truck2 = new Vehicle();
-            _boat = new Vehicle();
+            Containers = ToContainers(containerDestinations);
+            Vehicles = new List<Vehicle>() { truck1, truck2, boat };
+            Locations = new List<Location>() { factory, warehouseA, warehouseB, port} ;
 
-            factory.PutContainer(new Container(warehouseA));
+            // initial situation
+            factory.PutVehicle(truck1);
+            factory.PutVehicle(truck2);
+            factory.SetContainers(Containers);
+            port.PutVehicle(boat);
+
+            // routing configurations
+            factory.AddRoute("A", port, 1);
+            port.AddRoute("Factory", factory, 1);
+            port.AddRoute("A", warehouseA, 4);
+            warehouseA.AddRoute("Factory", port, 4);
+
+            factory.AddRoute("B", warehouseB, 5);
+            warehouseB.AddRoute("Factory", factory, 5);
+
+
+            // factory.PutContainer(new Container(warehouseA));
 
 
 
@@ -47,33 +71,57 @@ namespace TransportTycoon
             // factory -> warehouse B, 5h
         }
 
-        public int CurrentTime { get; set; } = 0;
+        public IEnumerable<Container> ToContainers(IEnumerable<string> containerDestinations)
+         => containerDestinations.Select(destination => new Container(destination));
+
+
+
         public bool DelieveryIsDone()
         {
+            if(Vehicles.Any(vehicle => vehicle.Hascontainer)) return false;
+            if(Locations.Any(location => location.HasContainersInTransit)) return false;
+            
+            if(CurrentTime >= 100) 
+            {
+                throw new Exception("You are bad and you should feel bad.");
+            }
 
-            return warehouseA.ContainerCount + warehouseB.ContainerCount == containerToDeliever ;
+            return true;
         }
+
+
         public void Deliver()
         {
-            this.Print();
+            
+
             while (!DelieveryIsDone())
             {
-                factory.LoadOnVehicle();
+
+                Console.WriteLine($"----- T: {this.CurrentTime} -----");
+
+                // load all containers on vehicles and depart
+                foreach(var location in Locations)
+                {
+                    location.LoadContainersOnVehicles();
+                }
+
+                // all unused trucks go back to factory
+
+                // all unused boats go back to port
 
 
-                CurrentTime++;
+                // advance time
+                foreach(var vehicle in Vehicles)
+                {
+                    vehicle.Move(); // also drops the container in the destination
+                }
+                CurrentTime ++;
+                Console.WriteLine(Environment.NewLine);
             }
-            // Loop while delivery is done
+
+            Console.WriteLine("----- ~~~~ DONE !!!! ~~~~ -----");
         }
 
-        private void Print()
-        {
-            Console.WriteLine(this.CurrentTime);
-
-            // Display
-
-            Console.WriteLine(Environment.NewLine);
-        }
     }
 
 
