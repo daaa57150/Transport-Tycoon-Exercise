@@ -4,6 +4,6 @@
     {
         public Container? Container { get; set; }
         public Location Destination { get; set; }
-        private int TimeBeforeArrival { get; set; }
+        public int TimeBeforeArrival { get;  set; }
     }
 }

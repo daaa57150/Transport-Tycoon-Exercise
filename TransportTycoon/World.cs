@@ -10,11 +10,14 @@ namespace TransportTycoon
         private Location warehouseA;
         private Location warehouseB;
         private Location port;
+        private int containerToDeliever;
+        private Vehicle _truck1;
+        private Vehicle _truck2;
+        private Vehicle _boat;
 
-        private int ContainerToDeliever;
         public World(IEnumerable<string> containerDestinations)
         {
-            ContainerToDeliever = containerDestinations.Count();
+            containerToDeliever = containerDestinations.Count();
             factory = new Location("Factory");
             warehouseA = new Location("A");
             warehouseB = new Location("B");
@@ -24,9 +27,9 @@ namespace TransportTycoon
             var factoryToPort = new Route(factory, port, 1);
             var portToWarehouseA = new Route(port, warehouseA, 4);
 
-            var truck = new Vehicle();
-            var truck2 = new Vehicle();
-            var boat = new Vehicle();
+            _truck1 = new Vehicle();
+            _truck2 = new Vehicle();
+            _boat = new Vehicle();
 
             factory.PutContainer(new Container(warehouseA));
 
@@ -44,18 +47,21 @@ namespace TransportTycoon
             // factory -> warehouse B, 5h
         }
 
-        public TimeSpan CurrentTime { get; private set; } = TimeSpan.Zero;
+        public int CurrentTime { get; set; } = 0;
         public bool DelieveryIsDone()
         {
 
-            return warehouseA.ContainerCount + warehouseB.ContainerCount == ;
+            return warehouseA.ContainerCount + warehouseB.ContainerCount == containerToDeliever ;
         }
         public void Deliver()
         {
             this.Print();
-            while (true)
+            while (!DelieveryIsDone())
             {
+                factory.LoadOnVehicle();
 
+
+                CurrentTime++;
             }
             // Loop while delivery is done
         }
