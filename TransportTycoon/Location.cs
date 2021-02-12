@@ -5,7 +5,7 @@ namespace TransportTycoon
     public class Location
     {
         public string Name { get; set; }
-
+        public int ContainerCount => containers.Count;
         private Queue<Container> containers;
 
         public Location(string name)
@@ -22,6 +22,7 @@ namespace TransportTycoon
             }
             return containers.Dequeue();
         }
+
 
         public void PutContainer(Container container)
         {
