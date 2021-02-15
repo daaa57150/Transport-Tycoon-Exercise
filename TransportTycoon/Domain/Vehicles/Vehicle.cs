@@ -51,31 +51,29 @@ namespace TransportTycoon
         // move, and if harrives at destination, unload
         public void Move()
         {
-            if(HasDestination)
+            if(!HasDestination) return;
+            
+            RemainingHoursForArrival --;
+            if(RemainingHoursForArrival == 0) 
             {
-                RemainingHoursForArrival --;
-                if(RemainingHoursForArrival == 0) 
-                {
-                    Console.WriteLine($"{Name} arriving at {To!.Name}");
+                Console.WriteLine($"{Name} arriving at {To!.Name}");
 
-                    // unload if has container
-                    if(Hascontainer) 
-                    {
-                        this.UnloadContainer();
-                    }
-
-                    // arrived => no  more destination
-                    // TODO: move into location (accoster/se garer/??)
-                    this.From = this.To;
-                    this.From.PutVehicle(this);
-                    this.To = null;
-                }
-                else
+                // unload if has container
+                if(Hascontainer) 
                 {
-                    // TODO: (Home / Delivery)
-                    var goal = Hascontainer ? $"delivering {Container!.DestinationName}" : "going home";
-                    Console.WriteLine($"{Name} moving towards {To!.Name} ({goal}), {RemainingHoursForArrival} hours remaining");
+                    this.UnloadContainer();
                 }
+
+                // arrived => no  more destination
+                // TODO: move into location (accoster/se garer/??)
+                this.From = this.To;
+                this.From.PutVehicle(this);
+                this.To = null;
+            }
+            else
+            {
+                var goal = Hascontainer ? $"delivering {Container!.DestinationName}" : "going home";
+                Console.WriteLine($"{Name} moving towards {To!.Name} ({goal}), {RemainingHoursForArrival} hours remaining");
             }
         }
 

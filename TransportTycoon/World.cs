@@ -42,7 +42,7 @@ namespace TransportTycoon
             AddRoutingTwoWays(factory, warehouseB, 5, RouteType.Road, null, null);
         }
 
-        public IEnumerable<Container> ToContainers(IEnumerable<string> containerDestinations)
+        private IEnumerable<Container> ToContainers(IEnumerable<string> containerDestinations)
          => containerDestinations.Select(destination => new Container(destination));
 
 
@@ -113,6 +113,4 @@ namespace TransportTycoon
         }
 
     }
-
-
 }
