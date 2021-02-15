@@ -11,6 +11,11 @@ namespace TransportTycoon
             
         }
 
+        public Factory(string name): base(name) 
+        {
+            
+        }
+
         public void SetContainers(IEnumerable<Container> containers) 
         {
             foreach(var container in containers)

@@ -6,22 +6,13 @@ namespace TransportTycoon
 {
     public class World
     {
-        // private Factory factory;
-        // private Destination warehouseA;
-        // private Destination warehouseB;
-        // private Port port;
-
-        // private Vehicle truck1;
-        // private Vehicle truck2;
-        // private Vehicle boat;
-
         private IEnumerable<Container> Containers; // = new List<Container>();
         private IEnumerable<Vehicle> Vehicles; //  = new List<Vehicle>() { truck1, truck2, boat };
         private IEnumerable<Location> Locations; // = new List<Location>() { factory, warehouseA, warehouseB, port };
         // private IEnumerable<Location> FinalDestinations; //
 
 
-        public int CurrentTime { get; private set; } = 0;
+        public int CurrentTime { get; private set; } = 0; // in hours
 
         public World(IEnumerable<string> containerDestinations)
         {
@@ -30,10 +21,10 @@ namespace TransportTycoon
             var boat = new Vehicle("Boat");
 
             // containerToDeliever = containerDestinations.Count();
-            var factory = new Factory();
+            var factory = new Factory("Factory");
             var warehouseA = new Destination("A");
             var warehouseB = new Destination("B");
-            var port = new Port();
+            var port = new Port("Port");
 
             Containers = ToContainers(containerDestinations);
             Vehicles = new List<Vehicle>() { truck1, truck2, boat };
@@ -53,22 +44,6 @@ namespace TransportTycoon
 
             factory.AddRoute("B", warehouseB, 5);
             warehouseB.AddRoute("Factory", factory, 5);
-
-
-            // factory.PutContainer(new Container(warehouseA));
-
-
-
-            // 1 Factory
-            // 1 Port
-            // 2 Warehouses
-
-            // 2 Trucks -> factory
-            // 1 Ship -> port
-
-            // factory -> port, 1h
-            // port -> warehouse A , 4h
-            // factory -> warehouse B, 5h
         }
 
         public IEnumerable<Container> ToContainers(IEnumerable<string> containerDestinations)
@@ -92,8 +67,6 @@ namespace TransportTycoon
 
         public void Deliver()
         {
-            
-
             while (!DelieveryIsDone())
             {
 
@@ -116,6 +89,7 @@ namespace TransportTycoon
                     vehicle.Move(); // also drops the container in the destination
                 }
                 CurrentTime ++;
+                
                 Console.WriteLine(Environment.NewLine);
             }
 

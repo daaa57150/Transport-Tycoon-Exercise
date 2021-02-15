@@ -9,10 +9,10 @@ namespace TransportTycoon
             
         }
 
-        // protected override void PrepareVehicles()
-        // {
+        public Port(string name): base(name) 
+        {
             
-        // }
+        }
     }
 }
 
