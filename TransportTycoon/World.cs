@@ -9,7 +9,6 @@ namespace TransportTycoon
         private IEnumerable<Container> Containers; // = new List<Container>();
         private IEnumerable<Vehicle> Vehicles; //  = new List<Vehicle>() { truck1, truck2, boat };
         private IEnumerable<Location> Locations; // = new List<Location>() { factory, warehouseA, warehouseB, port };
-        // private IEnumerable<Location> FinalDestinations; //
 
 
         public int CurrentTime { get; private set; } = 0; // in hours
@@ -22,9 +21,9 @@ namespace TransportTycoon
 
             // containerToDeliever = containerDestinations.Count();
             var factory = new Factory("Factory");
-            var warehouseA = new Destination("A");
-            var warehouseB = new Destination("B");
-            var port = new Port("Port");
+            var warehouseA = new Location("A");
+            var warehouseB = new Location("B");
+            var port = new Location("Port");
 
             Containers = ToContainers(containerDestinations);
             Vehicles = new List<Vehicle>() { truck1, truck2, boat };
@@ -37,19 +36,38 @@ namespace TransportTycoon
             port.PutVehicle(boat);
 
             // routing configurations
-            factory.AddRoute("A", port, 1);
-            port.AddRoute("Factory", factory, 1);
-            port.AddRoute("A", warehouseA, 4);
-            warehouseA.AddRoute("Factory", port, 4);
-            warehouseA.AddRoute("Port", port, 4);
-
-            factory.AddRoute("B", warehouseB, 5);
-            warehouseB.AddRoute("Factory", factory, 5);
+            // TODO: this is a bit too cryptic
+            AddRoutingTwoWays(factory, port, 1, new List<string>{ "A" }, null);
+            AddRoutingTwoWays(port, warehouseA, 4, null, new List<string>{ "Factory" });
+            AddRoutingTwoWays(factory, warehouseB, 5, null, null);
         }
 
         public IEnumerable<Container> ToContainers(IEnumerable<string> containerDestinations)
          => containerDestinations.Select(destination => new Container(destination));
 
+
+        private void AddRoutingTwoWays(
+            Location from, Location to, int duration, 
+            // destinations we can target using the route from `From` to `To`
+            List<string>? destinationsAfterTo,  
+            // destinations we can target using the route from `To` to `From`
+            List<string>? destinationsBeforeFrom)
+        {
+            // perspective of `From`
+            AddRoutingOneWay(from, to, duration, destinationsAfterTo);
+
+            // perspective of `To`
+            AddRoutingOneWay(to, from, duration, destinationsBeforeFrom);
+        }
+
+        private void AddRoutingOneWay(Location from, Location to, int duration, List<string>? destinationsAfterTo)
+        {
+            from.AddRoute(to.Name, to, duration);
+            destinationsAfterTo?.ForEach(destination => 
+            {
+                from.AddRoute(destination, to, duration);
+            });
+        }
 
 
         public bool DelieveryIsDone()

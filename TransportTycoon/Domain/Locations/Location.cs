@@ -5,7 +5,7 @@ using System.Linq;
 namespace TransportTycoon
 {
     // Base for all locations
-    public abstract class Location
+    public class Location
     {
         public string Name { get; set; }
         // protected List<Container> Containers;
