@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TransportTycoon
 {
@@ -20,7 +21,7 @@ namespace TransportTycoon
         {
             foreach(var container in containers)
             {
-                this.Containers.Add(container);
+                this.PutContainer(container);
             }
         }
 
