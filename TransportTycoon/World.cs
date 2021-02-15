@@ -15,9 +15,9 @@ namespace TransportTycoon
 
         public World(IEnumerable<string> containerDestinations)
         {
-            var truck1 = new Vehicle("Truck1", "Factory");
-            var truck2 = new Vehicle("Truck2", "Factory");
-            var boat = new Vehicle("Boat", "Port");
+            var truck1 = new Truck("Truck1", "Factory");
+            var truck2 = new Truck("Truck2", "Factory");
+            var boat = new Boat("Boat", "Port");
 
             // containerToDeliever = containerDestinations.Count();
             var factory = new Factory("Factory");
@@ -37,9 +37,9 @@ namespace TransportTycoon
 
             // routing configurations
             // TODO: this is a bit too cryptic
-            AddRoutingTwoWays(factory, port, 1, new List<string>{ "A" }, null);
-            AddRoutingTwoWays(port, warehouseA, 4, null, new List<string>{ "Factory" });
-            AddRoutingTwoWays(factory, warehouseB, 5, null, null);
+            AddRoutingTwoWays(factory, port, 1, RouteType.Road, new List<string>{ "A" }, null);
+            AddRoutingTwoWays(port, warehouseA, 4, RouteType.Sea, null, new List<string>{ "Factory" });
+            AddRoutingTwoWays(factory, warehouseB, 5, RouteType.Road, null, null);
         }
 
         public IEnumerable<Container> ToContainers(IEnumerable<string> containerDestinations)
@@ -47,25 +47,25 @@ namespace TransportTycoon
 
 
         private void AddRoutingTwoWays(
-            Location from, Location to, int duration, 
+            Location from, Location to, int duration, RouteType routeType, 
             // destinations we can target using the route from `From` to `To`
             List<string>? destinationsAfterTo,  
             // destinations we can target using the route from `To` to `From`
             List<string>? destinationsBeforeFrom)
         {
             // perspective of `From`
-            AddRoutingOneWay(from, to, duration, destinationsAfterTo);
+            AddRoutingOneWay(from, to, duration, routeType, destinationsAfterTo);
 
             // perspective of `To`
-            AddRoutingOneWay(to, from, duration, destinationsBeforeFrom);
+            AddRoutingOneWay(to, from, duration, routeType, destinationsBeforeFrom);
         }
 
-        private void AddRoutingOneWay(Location from, Location to, int duration, List<string>? destinationsAfterTo)
+        private void AddRoutingOneWay(Location from, Location to, int duration, RouteType routeType, List<string>? destinationsAfterTo)
         {
-            from.AddRoute(to.Name, to, duration);
+            from.AddRoute(to.Name, to, duration, routeType);
             destinationsAfterTo?.ForEach(destination => 
             {
-                from.AddRoute(destination, to, duration);
+                from.AddRoute(destination, to, duration, routeType);
             });
         }
 
@@ -74,11 +74,6 @@ namespace TransportTycoon
         {
             if(Vehicles.Any(vehicle => vehicle.Hascontainer)) return false;
             if(Locations.Any(location => location.HasContainersInTransit)) return false;
-            
-            if(CurrentTime >= 100) 
-            {
-                throw new Exception("You are bad and you should feel bad.");
-            }
 
             return true;
         }
@@ -88,7 +83,6 @@ namespace TransportTycoon
         {
             while (!DelieveryIsDone())
             {
-
                 Console.WriteLine($"----- T: {this.CurrentTime} -----");
 
                 // load all containers on vehicles and depart
@@ -99,17 +93,18 @@ namespace TransportTycoon
                     location.SendUselessVehiclesHome();
                 }
 
-                // all unused trucks go back to factory
-
-                // all unused boats go back to port
-
-
                 // advance time
                 foreach(var vehicle in Vehicles)
                 {
                     vehicle.Move(); // also drops the container in the destination
                 }
                 CurrentTime ++;
+
+                // failsafe stop
+                if(CurrentTime >= 1000) 
+                {
+                    throw new Exception("You are bad and you should feel bad.");
+                }
 
                 Console.WriteLine(Environment.NewLine);
             }

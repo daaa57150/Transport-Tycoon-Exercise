@@ -4,11 +4,10 @@ using System.Linq;
 
 namespace TransportTycoon
 {
-    // Base for all locations
+    // Base for all special locations
     public class Location
     {
         public string Name { get; set; }
-        // protected List<Container> Containers;
 
         // TODO: some locations are FiFo (Factory), others are Random access (Port)
         protected Queue<Container> ContainersInTransit; 
@@ -28,7 +27,6 @@ namespace TransportTycoon
 
         protected List<Vehicle> Vehicles = new List<Vehicle>();
         
-        // protected abstract void PrepareVehicles();
 
         public Location(string name)
         {
@@ -37,11 +35,13 @@ namespace TransportTycoon
             this.ContainersAtDestination = new List<Container>();
         }
 
-        public void AddRoute(string destinationName, Location nextStop, int duration)
+        // used during world configuration
+        public void AddRoute(string destinationName, Location nextStop, int duration, RouteType type)
         {
-            this.routing.Add(destinationName, new Route(nextStop, duration));
+            this.routing.Add(destinationName, new Route(nextStop, duration, type));
         }
 
+        // "Unload" ?
         public void PutContainer(Container container)
         {
             if(container.DestinationName == this.Name) 
@@ -54,6 +54,7 @@ namespace TransportTycoon
             }
         }
 
+        // "Park" ?
         public void PutVehicle(Vehicle vehicle)
         {
             this.Vehicles.Add(vehicle);
@@ -62,7 +63,7 @@ namespace TransportTycoon
             vehicle.To = null;
         }
 
-        protected Route RouteTo(string destinationName)
+        private Route FindRouteTo(string destinationName)
         {
             if(!this.routing.ContainsKey(destinationName)) 
             {
@@ -76,48 +77,48 @@ namespace TransportTycoon
             while(HasContainersInTransit) // not a terminating case, we are not sure all containers can be handled 
             {
                 var container = this.ContainersInTransit.First();
-                var route = RouteTo(container.DestinationName);
-                var vehicle = PopVehicleTo(route);
+                var route = FindRouteTo(container.DestinationName);
+                var vehicle = FindVehicleTo(route);
                 
                 if(vehicle is null) return; // FiFo mode: the head cannot be handled
 
                 Console.WriteLine($"{Name} loading container for {container.DestinationName} onto {vehicle.Name}, next destination: {route.Destination.Name}, it will take {route.Duration} hours");
-                vehicle.Container = container;
-                vehicle.Depart(this, route.Destination, route.Duration);
-                this.ContainersInTransit.Dequeue();
+                LoadFirstContainerOnVehicle(vehicle);
+                Depart(vehicle, route.Destination, route.Duration);
             }
+        }
+
+        // TODO: if not fifo, should be able to load any container
+        private void LoadFirstContainerOnVehicle(Vehicle vehicle)
+        {
+            var container = this.ContainersInTransit.Dequeue();
+            vehicle.Container = container;
         }
 
         public void SendUselessVehiclesHome()
         {
-            var uselessVehicles = Vehicles.Where(vehicle => !vehicle.IsHome && !vehicle.Hascontainer);
+            var uselessVehicles = Vehicles
+                .Where(vehicle => !vehicle.IsHome && !vehicle.Hascontainer)
+                .ToList(); // needed to make a copy and not reference a subset
             foreach(var vehicle in uselessVehicles)
             {
-                var route = RouteTo(vehicle.HomeName);
-                vehicle.Depart(this, route.Destination, route.Duration);
+                var route = FindRouteTo(vehicle.HomeName);
+                Depart(vehicle, route.Destination, route.Duration);
                 Console.WriteLine($"{vehicle.Name} going back home ({vehicle.HomeName}), next destination: {route.Destination.Name}, it will take {route.Duration} hours");
             }
         }
-       
+
+        private void Depart(Vehicle vehicle, Location destination, int duration)
+        {
+            vehicle.Depart(this, destination, duration);
+            Vehicles.Remove(vehicle);
+        }
 
         public bool IsDestinationForContainer(Container container)
-        {
-            return container.DestinationName == this.Name;
-        }
+            => container.DestinationName == this.Name;
 
-        // public bool HasContainersInTransit => Containers.Any(container => !IsDestinationForContainer(container));
-
-        // can be extended to see if the route is practicable by the vehicle
-        private Vehicle? PopVehicleTo(Route route)
-        {
-            if(HasVehicles)
-            {
-                var vehicle = Vehicles.ElementAt(0);
-                Vehicles.RemoveAt(0);
-                return vehicle;
-            }
-            return null;
-        }
+        private Vehicle? FindVehicleTo(Route route)
+            => Vehicles?.FirstOrDefault((vehicle => vehicle.CanUseRoute(route)));
 
     }
 }

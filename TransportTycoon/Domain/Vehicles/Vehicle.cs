@@ -3,7 +3,7 @@
 namespace TransportTycoon
 {
     // Base for vehicles
-    public class Vehicle
+    public abstract class Vehicle
     {
         public string Name { get; set; }
         public string HomeName { get; set; }
@@ -24,6 +24,9 @@ namespace TransportTycoon
             this.Name = name;
             this.HomeName = homeName;
         }
+
+        public abstract bool CanUseRoute(Route route);
+        
 
         public void Depart(Location current, Location destination, int duration)
         {

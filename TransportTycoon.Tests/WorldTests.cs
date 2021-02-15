@@ -11,7 +11,7 @@ namespace TransportTycoon.Tests
         //[InlineData("AB", 5)]
         //[InlineData("BB", 5)]
         //[InlineData("ABB", 7)]
-        [InlineData("AABABBAB", 37)]
+        [InlineData("AABABBAB", 29)]
         //[InlineData("AAAABBBB", )]
         //[InlineData("BBBBAAAA", )]
         //[InlineData("ABBBABAAABBB", )]
