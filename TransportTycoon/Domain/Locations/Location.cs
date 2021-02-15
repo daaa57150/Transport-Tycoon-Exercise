@@ -71,29 +71,6 @@ namespace TransportTycoon
             return this.routing[destinationName];
         }
 
-        // public void LoadContainersOnVehicles()
-        // {
-        //     // TODO: exercice says to dequeue in order in the factory
-
-        //     // reverse, as we may remove while iterating
-        //     /*for (int i = Containers.Count - 1; i >= 0; i--)
-        //     {
-        //         var container = Containers[i];
-                
-        //         if(IsDestinationForContainer(container)) continue;
-
-        //         var route = RouteTo(container.DestinationName);
-        //         var vehicle = PopVehicleTo(route);
-        //         if(vehicle != null)
-        //         {
-        //             Console.WriteLine($"{Name} loading container for {container.DestinationName} onto {vehicle.Name}, next destination: {route.Destination.Name}, it will take {route.Duration} hours");
-        //             vehicle.Container = container;
-        //             vehicle.Depart(this, route.Destination, route.Duration);
-        //             this.Containers.RemoveAt(i);
-        //         }
-        //     }*/
-        // }
-
         public void LoadContainersOnVehicles() // FiFo
         {
             while(HasContainersInTransit) // not a terminating case, we are not sure all containers can be handled 
@@ -110,6 +87,18 @@ namespace TransportTycoon
                 this.ContainersInTransit.Dequeue();
             }
         }
+
+        public void SendUselessVehiclesHome()
+        {
+            var uselessVehicles = Vehicles.Where(vehicle => !vehicle.IsHome && !vehicle.Hascontainer);
+            foreach(var vehicle in uselessVehicles)
+            {
+                var route = RouteTo(vehicle.HomeName);
+                vehicle.Depart(this, route.Destination, route.Duration);
+                Console.WriteLine($"{vehicle.Name} going back home ({vehicle.HomeName}), next destination: {route.Destination.Name}, it will take {route.Duration} hours");
+            }
+        }
+       
 
         public bool IsDestinationForContainer(Container container)
         {

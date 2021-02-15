@@ -6,6 +6,7 @@ namespace TransportTycoon
     public class Vehicle
     {
         public string Name { get; set; }
+        public string HomeName { get; set; }
 
         public Container? Container { get; set; }
 
@@ -14,12 +15,14 @@ namespace TransportTycoon
         
         public bool HasDestination => To != null;
         public bool Hascontainer => Container != null;
+        public bool IsHome => From?.Name == HomeName;
 
         public int RemainingHoursForArrival { get;  set; }
 
-        public Vehicle(string name)
+        public Vehicle(string name, string homeName)
         {
             this.Name = name;
+            this.HomeName = homeName;
         }
 
         public void Depart(Location current, Location destination, int duration)
@@ -34,6 +37,7 @@ namespace TransportTycoon
             // shut up compiler
             if(Container == null || To == null) return;
 
+            // TODO: this is probably the role of the location to do the unloading
             var destination = To.IsDestinationForContainer(Container) ? $"its destination {Container.DestinationName}" : $"{To.Name}";
             Console.WriteLine($"{Name} unloading container to {destination}");
 
@@ -58,27 +62,19 @@ namespace TransportTycoon
                     }
 
                     // arrived => no  more destination
+                    // TODO: move into location (accoster/se garer/??)
                     this.From = this.To;
+                    this.From.PutVehicle(this);
                     this.To = null;
                 }
                 else
                 {
-                    Console.WriteLine($"{Name} moving towards {To!.Name}, {RemainingHoursForArrival} hours remaining");
+                    // TODO: (Home / Delivery)
+                    var goal = Hascontainer ? $"delivering {Container!.DestinationName}" : "going home";
+                    Console.WriteLine($"{Name} moving towards {To!.Name} ({goal}), {RemainingHoursForArrival} hours remaining");
                 }
             }
         }
 
-        // public void Tick()
-        // {
-        //     if(HasDestination)
-        //     {
-        //         RemainingHoursForArrival --;
-        //         if(RemainingHoursForArrival == 0) 
-        //         {
-        //             To.PutContainer(this.Container);
-                    
-        //         }
-        //     }
-        // }
     }
 }

@@ -16,9 +16,9 @@ namespace TransportTycoon
 
         public World(IEnumerable<string> containerDestinations)
         {
-            var truck1 = new Vehicle("Truck1");
-            var truck2 = new Vehicle("Truck2");
-            var boat = new Vehicle("Boat");
+            var truck1 = new Vehicle("Truck1", "Factory");
+            var truck2 = new Vehicle("Truck2", "Factory");
+            var boat = new Vehicle("Boat", "Port");
 
             // containerToDeliever = containerDestinations.Count();
             var factory = new Factory("Factory");
@@ -41,6 +41,7 @@ namespace TransportTycoon
             port.AddRoute("Factory", factory, 1);
             port.AddRoute("A", warehouseA, 4);
             warehouseA.AddRoute("Factory", port, 4);
+            warehouseA.AddRoute("Port", port, 4);
 
             factory.AddRoute("B", warehouseB, 5);
             warehouseB.AddRoute("Factory", factory, 5);
@@ -75,7 +76,9 @@ namespace TransportTycoon
                 // load all containers on vehicles and depart
                 foreach(var location in Locations)
                 {
+                    // TODO: location should be responsible for unloading too
                     location.LoadContainersOnVehicles();
+                    location.SendUselessVehiclesHome();
                 }
 
                 // all unused trucks go back to factory
@@ -89,7 +92,7 @@ namespace TransportTycoon
                     vehicle.Move(); // also drops the container in the destination
                 }
                 CurrentTime ++;
-                
+
                 Console.WriteLine(Environment.NewLine);
             }
 
